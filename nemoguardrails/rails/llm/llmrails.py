@@ -577,6 +577,7 @@ class LLMRails:
         # Extract and join all the messages from StartUtteranceBotAction events as the response.
         responses = []
         new_extra_events = []
+        exception = None
         for event in new_events:
             if event["type"] == "StartUtteranceBotAction":
                 # Check if we need to remove a message
@@ -595,8 +596,13 @@ class LLMRails:
                 #         final_script=event["script"],
                 #     )
                 # )
+            elif event["type"].endswith("Exception"):
+                exception = event
 
-        new_message = {"role": "assistant", "content": "\n".join(responses)}
+        if exception:
+            new_message = {"role": "exception", "content": exception}
+        else:
+            new_message = {"role": "assistant", "content": "\n".join(responses)}
 
         # Save the new events in the history and update the cache
         events.extend(new_events)
